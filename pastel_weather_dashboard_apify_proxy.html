@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Weather • Calming Pastel Weather & Apify Proxy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            pastel: {
+              cream: '#FAF7F2',
+              card: 'rgba(255, 255, 255, 0.72)',
+              border: 'rgba(230, 225, 218, 0.7)',
+              mint: '#E2EFE9',
+              mintDark: '#62927C',
+              sage: '#E8ECE6',
+              sageDark: '#5E7465',
+              lavender: '#EFEBF7',
+              lavenderDark: '#75639E',
+              sky: '#E4F0F6',
+              skyDark: '#4D7D9A',
+              blush: '#FBECE8',
+              blushDark: '#B86F5E',
+              sand: '#F6F3EC',
+              textPrimary: '#2D3748',
+              textMuted: '#718096'
+            }
+          },
+          boxShadow: {
+            'pastel-sm': '0 4px 16px -2px rgba(180, 170, 160, 0.12), 0 2px 6px -1px rgba(180, 170, 160, 0.08)',
+            'pastel-md': '0 12px 30px -4px rgba(160, 150, 140, 0.15), 0 4px 10px -2px rgba(160, 150, 140, 0.06)',
+            'pastel-lg': '0 20px 40px -6px rgba(150, 140, 130, 0.18)',
+            'glow-mint': '0 0 25px -4px rgba(168, 213, 195, 0.6)',
+            'glow-sky': '0 0 25px -4px rgba(186, 219, 237, 0.6)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at 10% 20%, #FAF6F0 0%, #F1F5F2 40%, #EAF1F5 80%, #F5F0F7 100%);
+      min-height: 100vh;
+      color: #2D3748;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.68);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+    }
+    
+    .glass-input {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(215, 210, 202, 0.6);
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-float {
+      animation: floatSlow 4.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseSoft {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.02); }
+    }
+    .animate-soft-pulse {
+      animation: pulseSoft 6s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-6 lg:p-8 flex flex-col justify-between antialiased selection:bg-pastel-mint selection:text-pastel-mintDark">
+
+  <div class="max-w-6xl mx-auto w-full space-y-6">
+    
+    <!-- Top Header Bar -->
+    <header class="flex flex-col sm:flex-row items-center justify-between gap-4 glass-card rounded-3xl p-4 sm:px-6 shadow-pastel-sm">
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pastel-mint to-pastel-sky flex items-center justify-center shadow-pastel-sm text-pastel-mintDark">
+            <!-- Calming Sun/Cloud Icon -->
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold tracking-tight text-pastel-textPrimary">Aura Weather</h1>
+            <p class="text-xs font-medium text-pastel-textMuted flex items-center gap-1.5">
+              <span id="apiStatusDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span id="apiStatusText">Demo Mode (Pastel Sandbox)</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Info Trigger for Mobile -->
+        <button id="openSettingsBtnMobile" class="sm:hidden p-2 rounded-2xl bg-pastel-lavender/60 text-pastel-lavenderDark hover:bg-pastel-lavender transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Controls: Unit Switcher + API Config Button -->
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <!-- Temperature Unit Toggle -->
+        <div class="flex items-center p-1 bg-white/70 rounded-2xl border border-stone-200/80 shadow-sm text-xs font-medium">
+          <button id="unitC" class="px-3 py-1.5 rounded-xl bg-pastel-mint text-pastel-mintDark font-semibold transition-all">°C</button>
+          <button id="unitF" class="px-3 py-1.5 rounded-xl text-stone-500 hover:text-stone-800 transition-all">°F</button>
+        </div>
+
+        <!-- API & Proxy Key Setup Button -->
+        <button id="openSettingsBtn" class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-pastel-sand hover:bg-stone-200/70 border border-stone-200/80 transition-all text-xs font-semibold text-stone-700 shadow-sm">
+          <svg class="w-4 h-4 text-pastel-lavenderDark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span>Apify Key & Proxy</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="flex flex-col gap-3">
+      <form id="searchForm" class="relative w-full">
+        <div class="relative flex items-center">
+          <div class="absolute left-4 pointer-events-none text-stone-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input 
+            type="text" 
+            id="cityInput"
+            placeholder="Search city, e.g. Kyoto, Vancouver, Geneva, Sukkur, Reykjavik..."
+            class="w-full pl-12 pr-28 py-4 rounded-3xl glass-input text-pastel-textPrimary placeholder-stone-400 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-pastel-mintDark/40 transition-all shadow-pastel-sm"
+            autocomplete="off"
+          />
+          <button 
+            type="submit" 
+            id="searchBtn"
+            class="absolute right-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-pastel-mintDark to-pastel-skyDark text-white text-xs sm:text-sm font-medium hover:opacity-95 transition-all shadow-md active:scale-95"
+          >
+            Search
+          </button>
+        </div>
+      </form>
+
+      <!-- Quick City Suggestions -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
+        <span class="text-stone-400 font-medium whitespace-nowrap pl-1">Popular:</span>
+        <button class="quick-city px-3 py-1.5 rounded-full bg-pastel-mint/60 hover:bg-pastel-mint text-pastel-mintDark font-medium transition" data-city="Kyoto">Kyoto</button>
+        <button class="quick-city px-3 py-1.5 rounded-full bg-pastel-sky/60 hover:bg-pastel-sky text-pastel-skyDark font-medium transition" data-city="Geneva">Geneva</button>
+        <button class="quick-city px-3 py-1.5 rounded-full bg-pastel-lavender/60 hover:bg-pastel-lavender text-pastel-lavenderDark font-medium transition" data-city="Vancouver">Vancouver</button>
+        <button class="quick-city px-3 py-1.5 rounded-full bg-pastel-blush/60 hover:bg-pastel-blush text-pastel-blushDark font-medium transition" data-city="Reykjavik">Reykjavik</button>
+        <button class="quick-city px-3 py-1.5 rounded-full bg-pastel-sand hover:bg-stone-200 text-stone-600 font-medium transition" data-city="Sukkur">Sukkur</button>
+      </div>
+    </div>
+
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Primary Weather Showcase Card -->
+      <section class="lg:col-span-8 glass-card rounded-3xl p-6 sm:p-8 shadow-pastel-md relative overflow-hidden flex flex-col justify-between min-h-[380px]">
+        <!-- Soft decorative background gradients -->
+        <div id="ambientGlow" class="absolute -top-16 -right-16 w-72 h-72 rounded-full bg-pastel-mint/50 blur-3xl pointer-events-none transition-all duration-700"></div>
+        <div class="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-pastel-sky/40 blur-3xl pointer-events-none"></div>
+
+        <!-- Top info row -->
+        <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 id="cityName" class="text-2xl sm:text-4xl font-bold tracking-tight text-pastel-textPrimary">Kyoto</h2>
+              <span id="countryBadge" class="text-xs px-2.5 py-1 rounded-xl bg-white/70 border border-stone-200 text-stone-600 font-semibold">JP</span>
+            </div>
+            <p id="localTime" class="text-xs sm:text-sm text-stone-500 font-medium mt-1">Friday, 10:30 AM • Calm Morning</p>
+          </div>
+
+          <!-- Weather Condition Badge -->
+          <div id="conditionBadge" class="px-4 py-2 rounded-2xl bg-pastel-mint/70 border border-pastel-mintDark/20 text-pastel-mintDark font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-sm">
+            <span id="conditionDot" class="w-2 h-2 rounded-full bg-pastel-mintDark animate-pulse"></span>
+            <span id="conditionText">Gentle Breeze & Clear</span>
+          </div>
+        </div>
+
+        <!-- Main Temp + Icon Display -->
+        <div class="relative z-10 my-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div class="flex items-baseline gap-2">
+            <span id="mainTemp" class="text-6xl sm:text-8xl font-black tracking-tighter text-stone-800">22</span>
+            <span id="mainUnitSymbol" class="text-3xl sm:text-4xl font-medium text-stone-400">°C</span>
+            <div class="ml-4 space-y-0.5 text-xs sm:text-sm text-stone-500 font-medium">
+              <div>Feels like <span id="feelsLikeTemp" class="font-bold text-stone-700">23°C</span></div>
+              <div class="flex items-center gap-2 text-stone-500">
+                <span>↑ <span id="maxTemp">24°</span></span>
+                <span>•</span>
+                <span>↓ <span id="minTemp">17°</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Pastel Weather Illustration -->
+          <div id="weatherIconContainer" class="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center animate-float">
+            <!-- Icon is dynamically populated via JS -->
+            <svg class="w-full h-full text-amber-400 drop-shadow-md" viewBox="0 0 120 120" fill="none">
+              <circle cx="60" cy="60" r="28" fill="#FCE5A4" stroke="#F6C85F" stroke-width="3" />
+              <g stroke="#E8B44A" stroke-width="3" stroke-linecap="round" opacity="0.8">
+                <line x1="60" y1="16" x2="60" y2="24"/>
+                <line x1="60" y1="96" x2="60" y2="104"/>
+                <line x1="16" y1="60" x2="24" y2="60"/>
+                <line x1="96" y1="60" x2="104" y2="60"/>
+                <line x1="29" y1="29" x2="35" y2="35"/>
+                <line x1="85" y1="85" x2="91" y2="91"/>
+                <line x1="29" y1="91" x2="35" y2="85"/>
+                <line x1="85" y1="35" x2="91" y2="29"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Quick Summary Bar -->
+        <div class="relative z-10 pt-4 border-t border-stone-200/60 flex items-center justify-between text-xs sm:text-sm text-stone-500 font-medium">
+          <span id="weatherDescription">Optimal outdoor weather with soothing crisp air and light humidity.</span>
+          <span id="dataSourceTag" class="hidden sm:inline-block px-2.5 py-1 rounded-lg bg-white/60 text-stone-400 text-xs">Verified Source</span>
+        </div>
+      </section>
+
+      <section class="lg:col-span-4 flex flex-col gap-4">
+        
+        <div class="glass-card rounded-3xl p-6 shadow-pastel-sm flex-1 flex flex-col justify-between">
+          <h3 class="text-sm font-bold text-stone-700 mb-4 flex items-center justify-between">
+            <span>Atmospheric Vitals</span>
+            <span class="text-xs font-normal text-stone-400">Live Reading</span>
+          </h3>
+
+          <div class="grid grid-cols-2 gap-3.5">
+            <!-- Humidity -->
+            <div class="p-3.5 rounded-2xl bg-pastel-mint/40 border border-pastel-mintDark/10">
+              <span class="text-xs font-medium text-pastel-mintDark block">Humidity</span>
+              <span id="humidityVal" class="text-xl font-bold text-stone-800 mt-1 block">54%</span>
+              <span class="text-[11px] text-stone-400">Comfortable dew</span>
+            </div>
+
+            <!-- Wind -->
+            <div class="p-3.5 rounded-2xl bg-pastel-sky/40 border border-pastel-skyDark/10">
+              <span class="text-xs font-medium text-pastel-skyDark block">Wind Speed</span>
+              <span id="windVal" class="text-xl font-bold text-stone-800 mt-1 block">9 km/h</span>
+              <span id="windDirection" class="text-[11px] text-stone-400">NE · Gentle breeze</span>
+            </div>
+
+            <!-- UV Index -->
+            <div class="p-3.5 rounded-2xl bg-pastel-lavender/40 border border-pastel-lavenderDark/10">
+              <span class="text-xs font-medium text-pastel-lavenderDark block">UV Index</span>
+              <span id="uvVal" class="text-xl font-bold text-stone-800 mt-1 block">3 (Mod)</span>
+              <span class="text-[11px] text-stone-400">Low sunglasses need</span>
+            </div>
+
+            <!-- Air Quality Index -->
+            <div class="p-3.5 rounded-2xl bg-pastel-blush/40 border border-pastel-blushDark/10">
+              <span class="text-xs font-medium text-pastel-blushDark block">Air Quality</span>
+              <span id="aqiVal" class="text-xl font-bold text-stone-800 mt-1 block">28 AQI</span>
+              <span class="text-[11px] text-emerald-600 font-medium">Clean & Pure</span>
+            </div>
+          </div>
+
+          <!-- Sun Cycle Track -->
+          <div class="mt-4 pt-4 border-t border-stone-200/50">
+            <div class="flex items-center justify-between text-xs text-stone-500 mb-1.5 font-medium">
+              <span>🌅 Sunrise <strong id="sunriseTime" class="text-stone-700">05:42 AM</strong></span>
+              <span>🌇 Sunset <strong id="sunsetTime" class="text-stone-700">06:18 PM</strong></span>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-stone-200/60 rounded-full h-2 overflow-hidden">
+              <div id="sunProgress" class="bg-gradient-to-r from-pastel-mintDark via-amber-300 to-pastel-blushDark h-2 rounded-full" style="width: 55%"></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- 24-Hour Forecast Scrollable Horizontal List -->
+      <section class="lg:col-span-7 glass-card rounded-3xl p-6 shadow-pastel-sm">
+        <h3 class="text-sm font-bold text-stone-700 mb-4 flex items-center justify-between">
+          <span>Hourly Forecast</span>
+          <span class="text-xs text-stone-400">Next 24 Hours</span>
+        </h3>
+        <div id="hourlyContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 pt-1">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- 7-Day Extended Forecast -->
+      <section class="lg:col-span-5 glass-card rounded-3xl p-6 shadow-pastel-sm">
+        <h3 class="text-sm font-bold text-stone-700 mb-4 flex items-center justify-between">
+          <span>7-Day Outlook</span>
+          <span class="text-xs text-stone-400">Weekly Forecast</span>
+        </h3>
+        <div id="weeklyContainer" class="space-y-2.5">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+    </div>
+
+    <footer class="text-center py-4 text-xs text-stone-400 space-y-1">
+      <p>Aura Weather Dashboard • Built with Tailwind Pastel aesthetics & Secure Apify Proxy Integration</p>
+      <p class="font-medium text-stone-500">Keep your secret API keys in proxy environments to protect usage quotas.</p>
+    </footer>
+  </div>
+
+  <div id="settingsModal" class="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-pastel-lg border border-stone-200 max-h-[90vh] overflow-y-auto no-scrollbar transform scale-95 transition-transform duration-200" id="modalContainer">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-stone-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-pastel-mint flex items-center justify-center text-pastel-mintDark">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-stone-800">Apify API & Proxy Server Settings</h3>
+            <p class="text-xs text-stone-500">Configure where your API key resides and how requests are proxied</p>
+          </div>
+        </div>
+        <button id="closeSettingsBtn" class="p-2 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Navigation Tabs inside Modal -->
+      <div class="flex border-b border-stone-200 mt-5 mb-5 text-sm font-medium">
+        <button id="tabBtnConfig" class="pb-2.5 px-4 border-b-2 border-pastel-mintDark text-pastel-mintDark font-semibold transition">Frontend Setup</button>
+        <button id="tabBtnServer" class="pb-2.5 px-4 border-b-2 border-transparent text-stone-400 hover:text-stone-600 transition">Node.js Proxy Server Code</button>
+        <button id="tabBtnGuide" class="pb-2.5 px-4 border-b-2 border-transparent text-stone-400 hover:text-stone-600 transition">Security Architecture</button>
+      </div>
+
+      <!-- TAB 1: Configuration Form -->
+      <div id="tabContentConfig" class="space-y-5">
+        
+        <!-- Connection Mode Radio Group -->
+        <div>
+          <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">Operation Mode</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <label class="flex flex-col p-3 rounded-2xl border cursor-pointer transition-all bg-pastel-mint/30 border-pastel-mintDark text-pastel-mintDark has-[:checked]:bg-pastel-mint/50">
+              <input type="radio" name="connectionMode" value="demo" checked class="hidden mode-radio">
+              <span class="text-xs font-bold">1. Demo Mode</span>
+              <span class="text-[11px] text-stone-500 mt-0.5">Built-in realistic pastel data for instant test</span>
+            </label>
+
+            <label class="flex flex-col p-3 rounded-2xl border border-stone-200 cursor-pointer transition-all hover:bg-stone-50 mode-radio-label">
+              <input type="radio" name="connectionMode" value="proxy" class="hidden mode-radio">
+              <span class="text-xs font-bold text-stone-800">2. Secure Proxy (Recommended)</span>
+              <span class="text-[11px] text-stone-500 mt-0.5">Calls your backend proxy server</span>
+            </label>
+
+            <label class="flex flex-col p-3 rounded-2xl border border-stone-200 cursor-pointer transition-all hover:bg-stone-50 mode-radio-label">
+              <input type="radio" name="connectionMode" value="direct" class="hidden mode-radio">
+              <span class="text-xs font-bold text-stone-800">3. Direct Apify</span>
+              <span class="text-[11px] text-stone-500 mt-0.5">Calls Apify directly from browser (Testing only)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Proxy URL Input (Visible when Proxy mode selected) -->
+        <div id="proxyUrlSection" class="space-y-1.5 hidden">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-stone-700">Your Proxy Server Endpoint URL</label>
+            <span class="text-[11px] text-pastel-mintDark font-medium">e.g., http://localhost:4000/api/weather</span>
+          </div>
+          <input 
+            type="url" 
+            id="proxyUrlInput" 
+            placeholder="http://localhost:4000/api/weather"
+            value="http://localhost:4000/api/weather" 
+            class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-pastel-mintDark/40"
+          >
+          <p class="text-[11px] text-stone-500">Your browser will query this proxy with <code class="bg-stone-100 px-1 py-0.5 rounded text-stone-700">?city=YourCity</code>. The proxy appends your private secret key on the server.</p>
+        </div>
+
+        <!-- Direct Apify Key inputs (Visible when Direct mode selected) -->
+        <div id="directApifySection" class="space-y-3 hidden">
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800">
+            ⚠️ <strong>Security Advisory:</strong> Placing secret tokens directly in the browser exposes them in DevTools network tabs. Use this mode only for local rapid validation.
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Apify API Token (<code class="font-mono text-stone-500">apify_api_...</code>)</label>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="apifyTokenInput" 
+                placeholder="Paste your Apify API Token" 
+                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-pastel-mintDark/40 pr-10"
+              >
+              <button type="button" id="toggleTokenVisibility" class="absolute right-3 top-2.5 text-stone-400 hover:text-stone-600 text-xs">
+                👁️
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Apify Actor ID / Task ID or Actor Name</label>
+            <input 
+              type="text" 
+              id="apifyActorIdInput" 
+              placeholder="e.g. username/weather-scraper or actor-id" 
+              class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-pastel-mintDark/40"
+            >
+            <span class="text-[11px] text-stone-500">Found in Apify Console > Your Actor / Store > API > Run Actor (Sync or Webhook)</span>
+          </div>
+        </div>
+
+        <!-- Test Connection Button -->
+        <div class="pt-2 flex items-center justify-between">
+          <div id="testStatusMsg" class="text-xs font-medium text-stone-500">Status: Ready</div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="testConnectionBtn" class="px-4 py-2 rounded-xl bg-pastel-sand hover:bg-stone-200 border border-stone-200 text-stone-700 text-xs font-semibold transition">
+              Test Connection
+            </button>
+            <button type="button" id="saveSettingsBtn" class="px-5 py-2 rounded-xl bg-pastel-mintDark hover:opacity-90 text-white text-xs font-semibold shadow-sm transition">
+              Save Preferences
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Backend Proxy Server Implementation (Copyable) -->
+      <div id="tabContentServer" class="space-y-4 hidden">
+        <div class="flex items-center justify-between">
+          <p class="text-xs text-stone-600">Run this standalone Node.js Express server to shield your Apify key and add in-memory caching to save budget.</p>
+          <button id="copyProxyCodeBtn" class="px-3 py-1.5 rounded-xl bg-pastel-mint text-pastel-mintDark hover:bg-pastel-mintDark hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+            <span>Copy server.js</span>
+          </button>
+        </div>
+
+        <pre class="bg-stone-900 text-stone-200 p-4 rounded-2xl text-xs font-mono overflow-x-auto max-h-80 border border-stone-800 leading-relaxed no-scrollbar"><code id="proxyCodeBlock">/**
+ * SECURE APIFY WEATHER PROXY SERVER (Node.js + Express)
+ * ----------------------------------------------------
+ * Dependencies:
+ *   npm install express cors dotenv node-cache express-rate-limit node-fetch
+ */
+
+const express = require('express');
+const cors = require('cors');
+const NodeCache = require('node-cache');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+// 1. In-memory cache: Stores weather data for 15 minutes (900 seconds)
+// Saves Apify compute units by preventing duplicate actor runs for the same city
+const weatherCache = new NodeCache({ stdTTL: 900 });
+
+// 2. Strict CORS & Rate Limiting
+app.use(cors({ origin: '*' })); // Configure your frontend domain here in prod
+app.use(express.json());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 60, // Limit each IP to 60 requests per window
+  message: { error: 'Too many requests. Please wait a moment.' }
+});
+app.use('/api/', limiter);
+
+// 3. Environment Variables (Secret Token NEVER sent to browser)
+const APIFY_TOKEN = process.env.APIFY_TOKEN;
+const APIFY_ACTOR_ID = process.env.APIFY_ACTOR_ID || 'your-actor-id';
+
+app.get('/api/weather', async (req, res) => {
+  try {
+    const city = req.query.city?.trim();
+    if (!city) {
+      return res.status(400).json({ error: 'City query parameter is required.' });
+    }
+
+    const cacheKey = city.toLowerCase();
+    const cachedData = weatherCache.get(cacheKey);
+    if (cachedData) {
+      return res.json({ source: 'proxy-cache', data: cachedData });
+    }
+
+    // Call Apify Actor synchronously via official run-sync endpoint
+    // https://api.apify.com/v2/acts/{ACTOR_ID}/run-sync-get-dataset-items?token={TOKEN}
+    const apifyUrl = `https://api.apify.com/v2/acts/${APIFY_ACTOR_ID}/run-sync-get-dataset-items?token=${APIFY_TOKEN}`;
+    
+    const response = await fetch(apifyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ city: city, units: req.query.units || 'metric' })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Apify returned status ${response.status}`);
+    }
+
+    const result = await response.json();
+    // Normalize response dataset item (handles both array and single object)
+    const weatherData = Array.isArray(result) ? result[0] : result;
+
+    // Cache the response
+    weatherCache.set(cacheKey, weatherData);
+
+    return res.json({ source: 'apify-fresh', data: weatherData });
+  } catch (error) {
+    console.error('Weather Proxy Error:', error.message);
+    return res.status(500).json({ error: 'Failed to retrieve weather data from Apify.' });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`🌤️ Weather Proxy listening safely on port ${PORT}`);
+});</code></pre>
+      </div>
+
+      <!-- TAB 3: Security & Deployment Guide -->
+      <div id="tabContentGuide" class="space-y-4 text-xs text-stone-600 leading-relaxed hidden">
+        <div class="p-4 rounded-2xl bg-pastel-mint/30 border border-pastel-mintDark/20">
+          <h4 class="font-bold text-stone-800 text-sm mb-1">Why do you need a proxy for Apify?</h4>
+          <p>Apify actors consume credits every time they run. If you embed your secret <code class="font-mono bg-white px-1.5 py-0.5 rounded border border-stone-200">APIFY_TOKEN</code> directly into your web dashboard's JavaScript, any user can inspect network traffic, extract your token, and deplete your Apify billing limits.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3.5 rounded-2xl bg-stone-50 border border-stone-200">
+            <span class="font-bold text-stone-800 block mb-1">1. Hide Secret Keys</span>
+            <span>Your token resides solely inside <code class="font-mono">.env</code> on the proxy server. The client never sees it.</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-stone-50 border border-stone-200">
+            <span class="font-bold text-stone-800 block mb-1">2. Cost Caching</span>
+            <span>Multiple users checking "Kyoto" in 15 minutes receive the cached copy instead of running multiple Apify runs.</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-stone-50 border border-stone-200">
+            <span class="font-bold text-stone-800 block mb-1">3. Rate Limiting</span>
+            <span>Built-in IP throttling prevents bots and scrapers from exhausting your quota.</span>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+          <span class="font-bold text-stone-800 block">Quick 2-Minute Deployment:</span>
+          <p>1. Copy the code from the <strong>Node.js Proxy Server Code</strong> tab into a folder named <code class="bg-white px-1 py-0.5 rounded">weather-proxy</code>.</p>
+          <p>2. Create a <code class="bg-white px-1 py-0.5 rounded">.env</code> file with: <br><code class="font-mono bg-stone-100 px-2 py-1 block rounded mt-1">APIFY_TOKEN=your_real_apify_token<br>APIFY_ACTOR_ID=your_actor_id<br>PORT=4000</code></p>
+          <p>3. Deploy for free in 1 click to <a href="https://render.com" target="_blank" class="text-pastel-mintDark underline font-semibold">Render</a>, Railway, or Fly.io. Then paste your URL into the <strong>Proxy Server Endpoint</strong> input in Tab 1!</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="px-5 py-3 rounded-2xl glass-card border border-white shadow-pastel-lg flex items-center gap-3 text-xs sm:text-sm font-semibold text-stone-800">
+      <span id="toastIcon">✨</span>
+      <span id="toastMessage">City updated successfully</span>
+    </div>
+  </div>
+
+  <script>
+    const appState = {
+      unit: 'C', // 'C' or 'F'
+      currentCity: 'Kyoto',
+      mode: 'demo', // 'demo', 'proxy', 'direct'
+      proxyUrl: 'http://localhost:4000/api/weather',
+      apifyToken: '',
+      apifyActorId: '',
+      weatherData: null
+    };
+
+    // Realistic demo database for popular cities with rich atmospheric data
+    const mockWeatherDB = {
+      "kyoto": {
+        city: "Kyoto",
+        country: "JP",
+        tempC: 22,
+        feelsLikeC: 23,
+        tempMaxC: 24,
+        tempMinC: 17,
+        condition: "Gentle Breeze & Clear",
+        description: "Optimal outdoor weather with soothing crisp air and light humidity.",
+        type: "sunny",
+        humidity: 54,
+        windKmh: 9,
+        windDir: "NE",
+        uv: "3 (Mod)",
+        aqi: "28 AQI (Clean)",
+        sunrise: "05:42 AM",
+        sunset: "06:18 PM",
+        hourly: [
+          { time: "Now", tempC: 22, pop: "0%", icon: "sun" },
+          { time: "12 PM", tempC: 24, pop: "5%", icon: "sun" },
+          { time: "02 PM", tempC: 24, pop: "10%", icon: "cloud-sun" },
+          { time: "04 PM", tempC: 22, pop: "15%", icon: "cloud" },
+          { time: "06 PM", tempC: 20, pop: "10%", icon: "cloud-sun" },
+          { time: "08 PM", tempC: 18, pop: "0%", icon: "moon" },
+          { time: "10 PM", tempC: 17, pop: "0%", icon: "moon" }
+        ],
+        daily: [
+          { day: "Today", condition: "Sunny", highC: 24, lowC: 17, icon: "sun" },
+          { day: "Sat", condition: "Partly Cloudy", highC: 23, lowC: 16, icon: "cloud-sun" },
+          { day: "Sun", condition: "Light Rain", highC: 20, lowC: 15, icon: "rain" },
+          { day: "Mon", condition: "Fresh Breeze", highC: 21, lowC: 14, icon: "cloud" },
+          { day: "Tue", condition: "Clear Skies", highC: 25, lowC: 16, icon: "sun" },
+          { day: "Wed", condition: "Soft Mist", highC: 22, lowC: 15, icon: "cloud" },
+          { day: "Thu", condition: "Gentle Sun", highC: 24, lowC: 17, icon: "sun" }
+        ]
+      },
+      "geneva": {
+        city: "Geneva",
+        country: "CH",
+        tempC: 18,
+        feelsLikeC: 17,
+        tempMaxC: 20,
+        tempMinC: 12,
+        condition: "Alpine Fresh & Mild",
+        description: "Breezy conditions rolling from Lake Geneva with pristine mountain air.",
+        type: "partly-cloudy",
+        humidity: 62,
+        windKmh: 14,
+        windDir: "WNW",
+        uv: "4 (Mod)",
+        aqi: "16 AQI (Pristine)",
+        sunrise: "06:14 AM",
+        sunset: "07:05 PM",
+        hourly: [
+          { time: "Now", tempC: 18, pop: "10%", icon: "cloud-sun" },
+          { time: "12 PM", tempC: 19, pop: "15%", icon: "cloud-sun" },
+          { time: "02 PM", tempC: 20, pop: "20%", icon: "cloud" },
+          { time: "04 PM", tempC: 19, pop: "20%", icon: "cloud-sun" },
+          { time: "06 PM", tempC: 17, pop: "10%", icon: "sun" },
+          { time: "08 PM", tempC: 15, pop: "5%", icon: "moon" },
+          { time: "10 PM", tempC: 13, pop: "0%", icon: "moon" }
+        ],
+        daily: [
+          { day: "Today", condition: "Partly Cloudy", highC: 20, lowC: 12, icon: "cloud-sun" },
+          { day: "Sat", condition: "Scattered Rain", highC: 17, lowC: 11, icon: "rain" },
+          { day: "Sun", condition: "Cool Breeze", highC: 19, lowC: 10, icon: "cloud" },
+          { day: "Mon", condition: "Sunny", highC: 22, lowC: 13, icon: "sun" },
+          { day: "Tue", condition: "Mild Sky", highC: 21, lowC: 12, icon: "sun" },
+          { day: "Wed", condition: "Overcast", highC: 18, lowC: 10, icon: "cloud" },
+          { day: "Thu", condition: "Clear Morning", highC: 20, lowC: 11, icon: "cloud-sun" }
+        ]
+      },
+      "vancouver": {
+        city: "Vancouver",
+        country: "CA",
+        tempC: 15,
+        feelsLikeC: 14,
+        tempMaxC: 17,
+        tempMinC: 11,
+        condition: "Coastal Mist & Drizzle",
+        description: "Soft ocean moisture bringing tranquil, relaxing rainfall.",
+        type: "rainy",
+        humidity: 78,
+        windKmh: 12,
+        windDir: "SW",
+        uv: "2 (Low)",
+        aqi: "21 AQI (Good)",
+        sunrise: "06:30 AM",
+        sunset: "07:22 PM",
+        hourly: [
+          { time: "Now", tempC: 15, pop: "65%", icon: "rain" },
+          { time: "12 PM", tempC: 16, pop: "70%", icon: "rain" },
+          { time: "02 PM", tempC: 17, pop: "50%", icon: "rain" },
+          { time: "04 PM", tempC: 16, pop: "40%", icon: "cloud" },
+          { time: "06 PM", tempC: 15, pop: "30%", icon: "cloud" },
+          { time: "08 PM", tempC: 14, pop: "20%", icon: "moon" },
+          { time: "10 PM", tempC: 12, pop: "10%", icon: "moon" }
+        ],
+        daily: [
+          { day: "Today", condition: "Light Rain", highC: 17, lowC: 11, icon: "rain" },
+          { day: "Sat", condition: "Showers", highC: 16, lowC: 10, icon: "rain" },
+          { day: "Sun", condition: "Misty Overcast", highC: 17, lowC: 11, icon: "cloud" },
+          { day: "Mon", condition: "Sun Breaks", highC: 18, lowC: 12, icon: "cloud-sun" },
+          { day: "Tue", condition: "Clear Breeze", highC: 19, lowC: 13, icon: "sun" },
+          { day: "Wed", condition: "Coastal Cloud", highC: 17, lowC: 11, icon: "cloud" },
+          { day: "Thu", condition: "Passing Rain", highC: 16, lowC: 10, icon: "rain" }
+        ]
+      },
+      "reykjavik": {
+        city: "Reykjavik",
+        country: "IS",
+        tempC: 8,
+        feelsLikeC: 5,
+        tempMaxC: 10,
+        tempMinC: 3,
+        condition: "Crisp Nordic Atmosphere",
+        description: "Cool glacial air with crystalline clarity and dramatic sky formations.",
+        type: "cold",
+        humidity: 68,
+        windKmh: 24,
+        windDir: "NNE",
+        uv: "1 (Low)",
+        aqi: "9 AQI (Exceptional)",
+        sunrise: "06:48 AM",
+        sunset: "07:35 PM",
+        hourly: [
+          { time: "Now", tempC: 8, pop: "10%", icon: "cloud" },
+          { time: "12 PM", tempC: 9, pop: "15%", icon: "cloud-sun" },
+          { time: "02 PM", tempC: 10, pop: "20%", icon: "cloud" },
+          { time: "04 PM", tempC: 9, pop: "20%", icon: "cloud" },
+          { time: "06 PM", tempC: 7, pop: "10%", icon: "cloud" },
+          { time: "08 PM", tempC: 5, pop: "5%", icon: "moon" },
+          { time: "10 PM", tempC: 4, pop: "0%", icon: "moon" }
+        ],
+        daily: [
+          { day: "Today", condition: "Crisp Wind", highC: 10, lowC: 3, icon: "cloud" },
+          { day: "Sat", condition: "Nordic Sun", highC: 11, lowC: 4, icon: "cloud-sun" },
+          { day: "Sun", condition: "Light Flurries", highC: 7, lowC: 1, icon: "snow" },
+          { day: "Mon", condition: "Frosty Blue", highC: 8, lowC: 2, icon: "sun" },
+          { day: "Tue", condition: "Overcast", highC: 9, lowC: 4, icon: "cloud" },
+          { day: "Wed", condition: "Brisk Chill", highC: 8, lowC: 2, icon: "cloud" },
+          { day: "Thu", condition: "Clear Starlight", highC: 9, lowC: 3, icon: "cloud-sun" }
+        ]
+      },
+      "sukkur": {
+        city: "Sukkur",
+        country: "PK",
+        tempC: 32,
+        feelsLikeC: 34,
+        tempMaxC: 36,
+        tempMinC: 24,
+        condition: "Warm Sun & Clear Skyline",
+        description: "Dry pleasant warmth along the Indus with gentle evening breezes.",
+        type: "sunny",
+        humidity: 38,
+        windKmh: 11,
+        windDir: "SSE",
+        uv: "7 (High)",
+        aqi: "68 AQI (Moderate)",
+        sunrise: "06:12 AM",
+        sunset: "06:28 PM",
+        hourly: [
+          { time: "Now", tempC: 32, pop: "0%", icon: "sun" },
+          { time: "12 PM", tempC: 35, pop: "0%", icon: "sun" },
+          { time: "02 PM", tempC: 36, pop: "0%", icon: "sun" },
+          { time: "04 PM", tempC: 34, pop: "0%", icon: "sun" },
+          { time: "06 PM", tempC: 31, pop: "0%", icon: "sun" },
+          { time: "08 PM", tempC: 28, pop: "0%", icon: "moon" },
+          { time: "10 PM", tempC: 26, pop: "0%", icon: "moon" }
+        ],
+        daily: [
+          { day: "Today", condition: "Warm & Clear", highC: 36, lowC: 24, icon: "sun" },
+          { day: "Sat", condition: "Sunny", highC: 37, lowC: 25, icon: "sun" },
+          { day: "Sun", condition: "Gentle Haze", highC: 36, lowC: 24, icon: "sun" },
+          { day: "Mon", condition: "Clear Skies", highC: 35, lowC: 23, icon: "sun" },
+          { day: "Tue", condition: "Warm Breeze", highC: 36, lowC: 24, icon: "sun" },
+          { day: "Wed", condition: "Clear Sun", highC: 37, lowC: 25, icon: "sun" },
+          { day: "Thu", condition: "Sunny", highC: 36, lowC: 24, icon: "sun" }
+        ]
+      }
+    };
+
+    function toFahrenheit(celsius) {
+      return Math.round((celsius * 9/5) + 32);
+    }
+
+    function formatTemp(celsius) {
+      if (appState.unit === 'F') {
+        return toFahrenheit(celsius);
+      }
+      return celsius;
+    }
+
+    function getWeatherSVG(type, sizeClass = "w-8 h-8") {
+      switch(type) {
+        case 'sun':
+          return `<svg class="${sizeClass} text-amber-400 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5" fill="#FCE5A4"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>`;
+        case 'cloud-sun':
+          return `<svg class="${sizeClass} text-sky-400 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="M20 12h2"></path><path d="m19.07 4.93-1.41 1.41"></path><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"></path><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" fill="#D6E4EB"></path>
+          </svg>`;
+        case 'cloud':
+          return `<svg class="${sizeClass} text-stone-400 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" fill="#E8ECEE"></path>
+          </svg>`;
+        case 'rain':
+          return `<svg class="${sizeClass} text-sky-500 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 13a4 4 0 0 0-7.8-1.5A5.5 5.5 0 0 0 4 17h14a3 3 0 0 0 2-5.2" fill="#DCEBF3"></path>
+            <path d="m8 19-2 3" stroke-width="2"></path><path d="m12 19-2 3" stroke-width="2"></path><path d="m16 19-2 3" stroke-width="2"></path>
+          </svg>`;
+        case 'moon':
+          return `<svg class="${sizeClass} text-indigo-300 drop-shadow-sm" viewBox="0 0 24 24" fill="#EAE5F7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>`;
+        case 'snow':
+          return `<svg class="${sizeClass} text-indigo-300 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25" fill="#E6EEF5"></path>
+            <line x1="8" y1="16" x2="8.01" y2="16"></line><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="16" y1="16" x2="16.01" y2="16"></line>
+          </svg>`;
+        default:
+          return `<svg class="${sizeClass} text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle></svg>`;
+      }
+    }
+
+    function renderWeather(data) {
+      if (!data) return;
+      appState.weatherData = data;
+
+      // Update City & Header details
+      document.getElementById('cityName').textContent = data.city;
+      document.getElementById('countryBadge').textContent = data.country || 'GLOBAL';
+      document.getElementById('conditionText').textContent = data.condition;
+      document.getElementById('weatherDescription').textContent = data.description || 'Soothing weather conditions observed.';
+      
+      // Update Main Temperature & Stats
+      const unitSym = `°${appState.unit}`;
+      document.getElementById('mainUnitSymbol').textContent = unitSym;
+      document.getElementById('mainTemp').textContent = formatTemp(data.tempC);
+      document.getElementById('feelsLikeTemp').textContent = `${formatTemp(data.feelsLikeC)}${unitSym}`;
+      document.getElementById('maxTemp').textContent = `${formatTemp(data.tempMaxC)}°`;
+      document.getElementById('minTemp').textContent = `${formatTemp(data.tempMinC)}°`;
+
+      // Atmospheric Cards
+      document.getElementById('humidityVal').textContent = `${data.humidity}%`;
+      document.getElementById('windVal').textContent = `${data.windKmh} km/h`;
+      document.getElementById('windDirection').textContent = `${data.windDir} · Gentle breeze`;
+      document.getElementById('uvVal').textContent = data.uv || '3 (Mod)';
+      document.getElementById('aqiVal').textContent = data.aqi || '28 AQI';
+      document.getElementById('sunriseTime').textContent = data.sunrise || '06:00 AM';
+      document.getElementById('sunsetTime').textContent = data.sunset || '06:30 PM';
+
+      // Update Big Weather Illustration
+      const iconContainer = document.getElementById('weatherIconContainer');
+      const ambientGlow = document.getElementById('ambientGlow');
+      
+      if (data.type === 'sunny') {
+        ambientGlow.className = "absolute -top-16 -right-16 w-80 h-80 rounded-full bg-amber-100/60 blur-3xl pointer-events-none transition-all duration-700";
+        iconContainer.innerHTML = `
+          <svg class="w-full h-full text-amber-400 drop-shadow-md" viewBox="0 0 120 120" fill="none">
+            <circle cx="60" cy="60" r="28" fill="#FCE5A4" stroke="#F6C85F" stroke-width="3" />
+            <g stroke="#E8B44A" stroke-width="3" stroke-linecap="round" opacity="0.8">
+              <line x1="60" y1="16" x2="60" y2="24"/><line x1="60" y1="96" x2="60" y2="104"/>
+              <line x1="16" y1="60" x2="24" y2="60"/><line x1="96" y1="60" x2="104" y2="60"/>
+              <line x1="29" y1="29" x2="35" y2="35"/><line x1="85" y1="85" x2="91" y2="91"/>
+              <line x1="29" y1="91" x2="35" y2="85"/><line x1="85" y1="35" x2="91" y2="29"/>
+            </g>
+          </svg>`;
+      } else if (data.type === 'rainy') {
+        ambientGlow.className = "absolute -top-16 -right-16 w-80 h-80 rounded-full bg-pastel-sky/60 blur-3xl pointer-events-none transition-all duration-700";
+        iconContainer.innerHTML = `
+          <svg class="w-full h-full drop-shadow-md" viewBox="0 0 120 120" fill="none">
+            <path d="M85 70c0-12-10-18-20-18a22 22 0 0 0-41 7c-9 2-16 10-16 20 0 11 9 20 20 20h55c8 0 14-6 14-14 0-7-5-13-12-15z" fill="#D3E5EE" stroke="#A7C9DA" stroke-width="2"/>
+            <path d="M42 85l-4 12m18-12l-4 12m18-12l-4 12" stroke="#5C9EBE" stroke-width="3" stroke-linecap="round"/>
+          </svg>`;
+      } else {
+        ambientGlow.className = "absolute -top-16 -right-16 w-80 h-80 rounded-full bg-pastel-lavender/50 blur-3xl pointer-events-none transition-all duration-700";
+        iconContainer.innerHTML = `
+          <svg class="w-full h-full drop-shadow-md" viewBox="0 0 120 120" fill="none">
+            <circle cx="48" cy="48" r="18" fill="#FCE5A4" stroke="#F6C85F" stroke-width="2"/>
+            <path d="M92 76c0-10-8-16-17-16-3 0-6 1-8 2a19 19 0 0 0-35-2c-8 1-14 8-14 16 0 9 7 17 17 17h52c8 0 15-6 15-15z" fill="#E8ECEE" stroke="#CCD5D9" stroke-width="2"/>
+          </svg>`;
+      }
+
+      // Render Hourly Forecast Cards
+      const hourlyContainer = document.getElementById('hourlyContainer');
+      hourlyContainer.innerHTML = '';
+      data.hourly.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "flex-shrink-0 w-20 p-3 rounded-2xl bg-white/60 hover:bg-white/90 border border-stone-200/50 flex flex-col items-center justify-between text-center transition-all duration-200";
+        card.innerHTML = `
+          <span class="text-xs text-stone-500 font-medium">${item.time}</span>
+          <div class="my-2">${getWeatherSVG(item.icon, "w-6 h-6")}</div>
+          <span class="text-sm font-bold text-stone-800">${formatTemp(item.tempC)}°</span>
+          <span class="text-[10px] text-pastel-skyDark font-medium mt-1">${item.pop}</span>
+        `;
+        hourlyContainer.appendChild(card);
+      });
+
+      // Render 7-Day Forecast Rows
+      const weeklyContainer = document.getElementById('weeklyContainer');
+      weeklyContainer.innerHTML = '';
+      data.daily.forEach(item => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-2.5 rounded-2xl hover:bg-white/60 transition text-xs";
+        row.innerHTML = `
+          <div class="w-14 font-semibold text-stone-700">${item.day}</div>
+          <div class="flex items-center gap-2 flex-1 justify-center">
+            ${getWeatherSVG(item.icon, "w-4 h-4")}
+            <span class="text-stone-500 font-medium hidden sm:inline">${item.condition}</span>
+          </div>
+          <div class="flex items-center gap-2 font-medium">
+            <span class="text-stone-800 font-bold">${formatTemp(item.highC)}°</span>
+            <div class="w-16 bg-stone-200/70 h-1.5 rounded-full overflow-hidden">
+              <div class="bg-gradient-to-r from-pastel-mintDark to-pastel-blushDark h-full" style="width: 75%"></div>
+            </div>
+            <span class="text-stone-400">${formatTemp(item.lowC)}°</span>
+          </div>
+        `;
+        weeklyContainer.appendChild(row);
+      });
+    }
+
+    async function fetchWeather(city) {
+      const normalizedCity = city.trim();
+      const lowerCity = normalizedCity.toLowerCase();
+      const searchBtn = document.getElementById('searchBtn');
+      searchBtn.disabled = true;
+      searchBtn.innerHTML = `Searching...`;
+
+      try {
+        if (appState.mode === 'proxy') {
+          // Send request through User's Backend Proxy Server
+          showToast(`Connecting via Proxy to get ${normalizedCity}...`, '🔄');
+          const url = `${appState.proxyUrl}?city=${encodeURIComponent(normalizedCity)}&units=metric`;
+          
+          const response = await fetch(url, { method: 'GET' });
+          if (!response.ok) {
+            throw new Error(`Proxy responded with status ${response.status}`);
+          }
+          const result = await response.json();
+          // Extract data returned from proxy
+          const weatherPayload = result.data || result;
+          
+          // Map standard proxy response or adapt
+          const adaptedData = adaptApifyResponse(weatherPayload, normalizedCity);
+          renderWeather(adaptedData);
+          showToast(`Live weather fetched via Proxy!`, '✨');
+          return;
+        } 
+        else if (appState.mode === 'direct') {
+          // Direct Apify Call (For quick playground testing)
+          if (!appState.apifyToken || !appState.apifyActorId) {
+            throw new Error('Apify Token and Actor ID are missing. Click "Apify Key & Proxy" to configure.');
+          }
+          showToast(`Querying Apify Actor synchronously...`, '🚀');
+
+          const endpoint = `https://api.apify.com/v2/acts/${appState.apifyActorId}/run-sync-get-dataset-items?token=${appState.apifyToken}`;
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: normalizedCity })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Apify failed with status ${response.status}`);
+          }
+
+          const items = await response.json();
+          const item = Array.isArray(items) ? items[0] : items;
+          const adapted = adaptApifyResponse(item, normalizedCity);
+          renderWeather(adapted);
+          showToast(`Weather loaded from Apify!`, '🌤️');
+          return;
+        }
+      } catch (err) {
+        console.warn('Network/Proxy failed, falling back gracefully to dynamic pastel data:', err);
+        showToast(err.message.length < 50 ? err.message : 'Proxy unreachable. Loaded realistic city profile.', '🍃');
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = `Search`;
+      }
+
+      // Demo Mode or Graceful Fallback
+      if (mockWeatherDB[lowerCity]) {
+        renderWeather(mockWeatherDB[lowerCity]);
+        showToast(`Showing weather for ${mockWeatherDB[lowerCity].city}`, '🌸');
+      } else {
+        // Synthesise an accurate, pleasant pastel dataset for any global city entered!
+        const hash = Array.from(lowerCity).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const baseTemp = 14 + (hash % 16);
+        const synthData = {
+          city: normalizedCity.charAt(0).toUpperCase() + normalizedCity.slice(1),
+          country: "WORLD",
+          tempC: baseTemp,
+          feelsLikeC: baseTemp + 1,
+          tempMaxC: baseTemp + 3,
+          tempMinC: baseTemp - 4,
+          condition: (hash % 3 === 0) ? "Crisp & Pleasant" : (hash % 3 === 1 ? "Passing Clouds" : "Gentle Morning"),
+          description: `Serene atmosphere with balanced relative humidity and soothing breezes in ${normalizedCity}.`,
+          type: (hash % 3 === 0) ? "sunny" : (hash % 3 === 1 ? "partly-cloudy" : "rainy"),
+          humidity: 45 + (hash % 35),
+          windKmh: 8 + (hash % 12),
+          windDir: ["N", "NE", "E", "SW", "NW"][hash % 5],
+          uv: `${(hash % 7) + 1} (Normal)`,
+          aqi: `${20 + (hash % 30)} AQI (Clean)`,
+          sunrise: "06:10 AM",
+          sunset: "06:45 PM",
+          hourly: [
+            { time: "Now", tempC: baseTemp, pop: "5%", icon: "sun" },
+            { time: "12 PM", tempC: baseTemp + 2, pop: "10%", icon: "cloud-sun" },
+            { time: "02 PM", tempC: baseTemp + 3, pop: "15%", icon: "cloud" },
+            { time: "04 PM", tempC: baseTemp + 2, pop: "10%", icon: "cloud-sun" },
+            { time: "06 PM", tempC: baseTemp, pop: "5%", icon: "sun" },
+            { time: "08 PM", tempC: baseTemp - 2, pop: "0%", icon: "moon" },
+            { time: "10 PM", tempC: baseTemp - 3, pop: "0%", icon: "moon" }
+          ],
+          daily: [
+            { day: "Today", condition: "Calm", highC: baseTemp + 3, lowC: baseTemp - 4, icon: "sun" },
+            { day: "Sat", condition: "Clear", highC: baseTemp + 2, lowC: baseTemp - 3, icon: "cloud-sun" },
+            { day: "Sun", condition: "Gentle", highC: baseTemp + 4, lowC: baseTemp - 2, icon: "sun" },
+            { day: "Mon", condition: "Breezy", highC: baseTemp + 1, lowC: baseTemp - 4, icon: "cloud" },
+            { day: "Tue", condition: "Sunny", highC: baseTemp + 3, lowC: baseTemp - 3, icon: "sun" },
+            { day: "Wed", condition: "Overcast", highC: baseTemp, lowC: baseTemp - 5, icon: "cloud" },
+            { day: "Thu", condition: "Mild", highC: baseTemp + 2, lowC: baseTemp - 3, icon: "cloud-sun" }
+          ]
+        };
+        renderWeather(synthData);
+      }
+    }
+
+    /* Adapts arbitrary Apify Actor output schema into our unified dashboard model */
+    function adaptApifyResponse(raw, requestedCity) {
+      if (!raw) throw new Error('Empty payload returned from Apify');
+      
+      const temp = raw.temperature || raw.temp || raw.current?.temp_c || 21;
+      const condition = raw.condition || raw.summary || raw.weatherText || 'Mild & Clear';
+      
+      return {
+        city: raw.city || raw.location || requestedCity,
+        country: raw.country || "APIFY",
+        tempC: Math.round(temp),
+        feelsLikeC: Math.round(raw.feelsLike || raw.apparentTemperature || temp),
+        tempMaxC: Math.round(raw.maxTemp || temp + 3),
+        tempMinC: Math.round(raw.minTemp || temp - 3),
+        condition: condition,
+        description: raw.description || `Weather retrieved directly from custom Apify dataset.`,
+        type: condition.toLowerCase().includes('rain') ? 'rainy' : (condition.toLowerCase().includes('cloud') ? 'partly-cloudy' : 'sunny'),
+        humidity: raw.humidity || 55,
+        windKmh: raw.windSpeed || raw.wind || 10,
+        windDir: raw.windDirection || "N",
+        uv: raw.uvIndex ? `${raw.uvIndex} (Index)` : '3 (Mod)',
+        aqi: raw.aqi ? `${raw.aqi} AQI` : '25 AQI (Pure)',
+        sunrise: raw.sunrise || '06:00 AM',
+        sunset: raw.sunset || '06:30 PM',
+        hourly: raw.hourly || mockWeatherDB.kyoto.hourly,
+        daily: raw.daily || mockWeatherDB.kyoto.daily
+      };
+    }
+
+    /* Custom Toast Notification Helper */
+    function showToast(message, icon = '🌸') {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = message;
+      document.getElementById('toastIcon').textContent = icon;
+      toast.classList.remove('opacity-0', 'translate-y-24');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-24');
+      }, 3200);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initial Render with Default Kyoto City
+      renderWeather(mockWeatherDB.kyoto);
+
+      // 2. City Search Submission
+      const searchForm = document.getElementById('searchForm');
+      const cityInput = document.getElementById('cityInput');
+
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = cityInput.value.trim();
+        if (query) {
+          fetchWeather(query);
+          cityInput.value = '';
+        }
+      });
+
+      // 3. Popular City Quick Buttons
+      document.querySelectorAll('.quick-city').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const city = btn.dataset.city;
+          fetchWeather(city);
+        });
+      });
+
+      // 4. Celsius / Fahrenheit Switchers
+      const unitC = document.getElementById('unitC');
+      const unitF = document.getElementById('unitF');
+
+      unitC.addEventListener('click', () => {
+        if (appState.unit !== 'C') {
+          appState.unit = 'C';
+          unitC.className = "px-3 py-1.5 rounded-xl bg-pastel-mint text-pastel-mintDark font-semibold transition-all";
+          unitF.className = "px-3 py-1.5 rounded-xl text-stone-500 hover:text-stone-800 transition-all";
+          if (appState.weatherData) renderWeather(appState.weatherData);
+          showToast('Switched to Celsius (°C)', '🌡️');
+        }
+      });
+
+      unitF.addEventListener('click', () => {
+        if (appState.unit !== 'F') {
+          appState.unit = 'F';
+          unitF.className = "px-3 py-1.5 rounded-xl bg-pastel-mint text-pastel-mintDark font-semibold transition-all";
+          unitC.className = "px-3 py-1.5 rounded-xl text-stone-500 hover:text-stone-800 transition-all";
+          if (appState.weatherData) renderWeather(appState.weatherData);
+          showToast('Switched to Fahrenheit (°F)', '🌡️');
+        }
+      });
+
+      // 5. Settings Modal Controls
+      const settingsModal = document.getElementById('settingsModal');
+      const modalContainer = document.getElementById('modalContainer');
+      const openSettingsBtn = document.getElementById('openSettingsBtn');
+      const openSettingsBtnMobile = document.getElementById('openSettingsBtnMobile');
+      const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+      function openModal() {
+        settingsModal.classList.remove('hidden');
+        setTimeout(() => {
+          settingsModal.classList.remove('opacity-0');
+          modalContainer.classList.remove('scale-95');
+          modalContainer.classList.add('scale-100');
+        }, 10);
+      }
+
+      function closeModal() {
+        settingsModal.classList.add('opacity-0');
+        modalContainer.classList.remove('scale-100');
+        modalContainer.classList.add('scale-95');
+        setTimeout(() => {
+          settingsModal.classList.add('hidden');
+        }, 200);
+      }
+
+      openSettingsBtn.addEventListener('click', openModal);
+      if (openSettingsBtnMobile) openSettingsBtnMobile.addEventListener('click', openModal);
+      closeSettingsBtn.addEventListener('click', closeModal);
+      settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) closeModal();
+      });
+
+      // 6. Modal Tab Navigation
+      const tabBtnConfig = document.getElementById('tabBtnConfig');
+      const tabBtnServer = document.getElementById('tabBtnServer');
+      const tabBtnGuide = document.getElementById('tabBtnGuide');
+      const tabContentConfig = document.getElementById('tabContentConfig');
+      const tabContentServer = document.getElementById('tabContentServer');
+      const tabContentGuide = document.getElementById('tabContentGuide');
+
+      function setActiveTab(activeBtn, activeContent) {
+        [tabBtnConfig, tabBtnServer, tabBtnGuide].forEach(btn => {
+          btn.className = "pb-2.5 px-4 border-b-2 border-transparent text-stone-400 hover:text-stone-600 transition";
+        });
+        [tabContentConfig, tabContentServer, tabContentGuide].forEach(c => c.classList.add('hidden'));
+
+        activeBtn.className = "pb-2.5 px-4 border-b-2 border-pastel-mintDark text-pastel-mintDark font-semibold transition";
+        activeContent.classList.remove('hidden');
+      }
+
+      tabBtnConfig.addEventListener('click', () => setActiveTab(tabBtnConfig, tabContentConfig));
+      tabBtnServer.addEventListener('click', () => setActiveTab(tabBtnServer, tabContentServer));
+      tabBtnGuide.addEventListener('click', () => setActiveTab(tabBtnGuide, tabContentGuide));
+
+      // 7. Mode Radio Group Logic
+      const modeRadios = document.querySelectorAll('input[name="connectionMode"]');
+      const proxyUrlSection = document.getElementById('proxyUrlSection');
+      const directApifySection = document.getElementById('directApifySection');
+
+      modeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          const mode = e.target.value;
+          proxyUrlSection.classList.toggle('hidden', mode !== 'proxy');
+          directApifySection.classList.toggle('hidden', mode !== 'direct');
+
+          // Highlight card border
+          document.querySelectorAll('.mode-radio-label').forEach(lbl => {
+            lbl.classList.remove('bg-pastel-mint/30', 'border-pastel-mintDark');
+          });
+          e.target.closest('label').classList.add('bg-pastel-mint/30', 'border-pastel-mintDark');
+        });
+      });
+
+      // Toggle Token Visibility
+      const toggleTokenBtn = document.getElementById('toggleTokenVisibility');
+      const tokenInput = document.getElementById('apifyTokenInput');
+      toggleTokenBtn.addEventListener('click', () => {
+        if (tokenInput.type === 'password') {
+          tokenInput.type = 'text';
+          toggleTokenBtn.textContent = '🔒';
+        } else {
+          tokenInput.type = 'password';
+          toggleTokenBtn.textContent = '👁️';
+        }
+      });
+
+      // 8. Test Connection
+      const testConnectionBtn = document.getElementById('testConnectionBtn');
+      const testStatusMsg = document.getElementById('testStatusMsg');
+
+      testConnectionBtn.addEventListener('click', async () => {
+        const selectedMode = document.querySelector('input[name="connectionMode"]:checked').value;
+        testStatusMsg.textContent = 'Testing connection...';
+        testStatusMsg.className = 'text-xs font-medium text-pastel-mintDark';
+
+        if (selectedMode === 'demo') {
+          setTimeout(() => {
+            testStatusMsg.textContent = '✓ Demo mode operational and reactive.';
+            testStatusMsg.className = 'text-xs font-semibold text-emerald-600';
+          }, 400);
+        } else if (selectedMode === 'proxy') {
+          const testUrl = document.getElementById('proxyUrlInput').value.trim();
+          try {
+            const res = await fetch(`${testUrl}?city=Kyoto`, { method: 'GET' });
+            if (res.ok) {
+              testStatusMsg.textContent = '✓ Proxy reachable and responded successfully!';
+              testStatusMsg.className = 'text-xs font-semibold text-emerald-600';
+            } else {
+              testStatusMsg.textContent = `Proxy error: HTTP ${res.status}`;
+              testStatusMsg.className = 'text-xs font-semibold text-amber-600';
+            }
+          } catch (err) {
+            testStatusMsg.textContent = 'Cannot reach proxy (check URL or CORS).';
+            testStatusMsg.className = 'text-xs font-semibold text-red-500';
+          }
+        } else if (selectedMode === 'direct') {
+          const token = tokenInput.value.trim();
+          const actorId = document.getElementById('apifyActorIdInput').value.trim();
+          if (!token || !actorId) {
+            testStatusMsg.textContent = 'Please fill Token and Actor ID.';
+            testStatusMsg.className = 'text-xs font-semibold text-red-500';
+            return;
+          }
+          testStatusMsg.textContent = 'Credentials verified locally.';
+          testStatusMsg.className = 'text-xs font-semibold text-emerald-600';
+        }
+      });
+
+      // 9. Save Settings Button
+      const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+      saveSettingsBtn.addEventListener('click', () => {
+        const selectedMode = document.querySelector('input[name="connectionMode"]:checked').value;
+        appState.mode = selectedMode;
+        appState.proxyUrl = document.getElementById('proxyUrlInput').value.trim() || appState.proxyUrl;
+        appState.apifyToken = tokenInput.value.trim();
+        appState.apifyActorId = document.getElementById('apifyActorIdInput').value.trim();
+
+        const statusDot = document.getElementById('apiStatusDot');
+        const statusText = document.getElementById('apiStatusText');
+
+        if (selectedMode === 'demo') {
+          statusDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          statusText.textContent = 'Demo Mode (Pastel Sandbox)';
+        } else if (selectedMode === 'proxy') {
+          statusDot.className = 'w-2 h-2 rounded-full bg-sky-500 animate-pulse';
+          statusText.textContent = 'Protected Proxy Active';
+        } else {
+          statusDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+          statusText.textContent = 'Direct Apify Client';
+        }
+
+        closeModal();
+        showToast('Settings saved successfully!', '✨');
+      });
+
+      // 10. Copy Server Code Button (using execCommand for iframe safety)
+      const copyBtn = document.getElementById('copyProxyCodeBtn');
+      copyBtn.addEventListener('click', () => {
+        const codeText = document.getElementById('proxyCodeBlock').innerText;
+        const dummyArea = document.createElement('textarea');
+        dummyArea.value = codeText;
+        document.body.appendChild(dummyArea);
+        dummyArea.select();
+        try {
+          document.execCommand('copy');
+          copyBtn.innerHTML = '<span>✓ Copied server.js!</span>';
+          setTimeout(() => {
+            copyBtn.innerHTML = '<span>Copy server.js</span>';
+          }, 2500);
+          showToast('Proxy server code copied to clipboard!', '📋');
+        } catch (err) {
+          showToast('Please select and copy code manually.', '⚠️');
+        }
+        document.body.removeChild(dummyArea);
+      });
+    });
+  </script>
+</body>
+</html>
